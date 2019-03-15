@@ -24,7 +24,7 @@ const port = process.env.PORT || 5000;
 
 // API call for location search bar
 app.get("/locations/:name", (req, res) => {
-  const query = req.params.name;
+  const query = querystring.escape(req.params.name);
 
   if (query !== "") {
     const URL =
