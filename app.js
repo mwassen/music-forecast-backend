@@ -51,7 +51,7 @@ app.get("/events/:locationid", (req, res) => {
   const query = req.params.locationid;
 
   const dataForViz = [];
-  const maxPages = 1;
+  const maxPages = 10;
 
   fetchSongkick(query)
   .then(data => {
