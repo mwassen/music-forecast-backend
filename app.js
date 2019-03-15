@@ -1,20 +1,24 @@
 const express = require("express");
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
+const querystring = require("querystring");
 
 const app = express();
 
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", '*');
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", true);
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,content-type,application/json');
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
+  );
   next();
 });
 
 const keys = {
   songkick: process.env.SK_KEY,
   lastfm: process.env.LF_KEY
-}
+};
 
 const port = process.env.PORT || 5000;
 
@@ -42,47 +46,45 @@ app.get("/locations/:name", (req, res) => {
       })
       .then(data => {
         res.send(data);
-      })
+      });
   }
 });
 
 // API call for data retrieval
-app.get("/events/:locationid", (req, res) => {
+app.get("/events/:locationid", (req, res) => {
   const query = req.params.locationid;
 
   const dataForViz = [];
   const maxPages = 10;
 
   fetchSongkick(query)
-  .then(data => {
-    // Handle multiple artist events
-    data.forEach(page => {
-      if (page.resultsPage) {
-        if (page.resultsPage.totalEntries === 0) return;
-        page.resultsPage.results.event.forEach(event => {
-          // Create data structure for event information
-          dataForViz.push({
-            date: event.start.date,
-            name: event.displayName,
-            artists: event.performance,
-            link: event.uri
+    .then(data => {
+      // Handle multiple artist events
+      data.forEach(page => {
+        if (page.resultsPage) {
+          if (page.resultsPage.totalEntries === 0) return;
+          page.resultsPage.results.event.forEach(event => {
+            // Create data structure for event information
+            dataForViz.push({
+              date: event.start.date,
+              name: event.displayName,
+              artists: event.performance,
+              link: event.uri
+            });
           });
-        });
-      }
-    });
-    const fetches = [];
-    dataForViz.forEach(event => {
-      event.artists.forEach(artist => {
-        fetches.push(fetchLastFm(artist));
+        }
       });
+      const fetches = [];
+      dataForViz.forEach(event => {
+        event.artists.forEach(artist => {
+          fetches.push(fetchLastFm(artist));
+        });
+      });
+      return Promise.all(fetches);
+    })
+    .then(() => {
+      res.send(dataForViz);
     });
-    return Promise.all(fetches);
-  })
-  .then(() => {
-    res.send(dataForViz);
-  });
-
-
 
   function fetchSongkick(location) {
     const songkickURL =
@@ -95,9 +97,7 @@ app.get("/events/:locationid", (req, res) => {
       const songkickReqs = [];
       const totalEntries = data.resultsPage.totalEntries;
       const reqPages =
-        totalEntries < maxPages * 50
-          ? Math.ceil(totalEntries / 50)
-          : maxPages;
+        totalEntries < maxPages * 50 ? Math.ceil(totalEntries / 50) : maxPages;
 
       songkickReqs.push(data);
       for (let i = 2; i <= reqPages; i++) {
@@ -120,7 +120,7 @@ app.get("/events/:locationid", (req, res) => {
   function fetchLastFm(artist) {
     const lastfmURL =
       "http://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=" +
-      artist.displayName +
+      querystring.escape(artist.displayName) +
       "&api_key=" +
       keys.lastfm +
       "&format=json";
@@ -138,8 +138,6 @@ app.get("/events/:locationid", (req, res) => {
     });
   }
 });
-
-
 
 app.listen(port, () => {
   console.log("listening on port " + port);
