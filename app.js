@@ -115,64 +115,6 @@ app.get("/events/:locationid", (req, res) => {
         } else return response.json();
       });
     }
-
-    function dataPrep(dataset) {
-      const genreList = {};
-      const filterItems = ["seen live", "All", "under 2000 listeners"];
-
-      dataset.forEach(event => {
-        event.artists.forEach(artist => {
-          if (artist.topGenres) {
-            artist.topGenres.forEach(genre => {
-              if (!genreList[genre.name]) {
-                genreList[genre.name] = genre.count;
-              } else {
-                genreList[genre.name] += genre.count;
-              }
-            });
-          }
-        });
-      });
-
-      const toptags = Object.keys(genreList)
-        .sort((a, b) => {
-          return genreList[b] - genreList[a];
-        })
-        .slice(0, 30)
-        .filter(genre => {
-          let present = true;
-          filterItems.forEach(fakeGenre => {
-            if (genre === fakeGenre) present = false;
-          });
-          return present;
-        })
-        .slice(0, 20);
-
-      return reOrganise(dataset, toptags);
-
-      function reOrganise(data, top20) {
-        const output = [];
-        data.forEach(event => {
-          event.artists.forEach(artist => {
-            if (artist.topGenres) {
-              artist.topGenres.forEach(genre => {
-                top20.forEach(hotGenre => {
-                  if (genre.name === hotGenre) {
-                    output.push({
-                      genre: genre.name,
-                      weight: genre.count,
-                      date: event.date,
-                      details: event
-                    });
-                  }
-                });
-              });
-            }
-          });
-        });
-        return output;
-      }
-    }
   }
 
   function fetchLastFm(artist) {
@@ -194,6 +136,64 @@ app.get("/events/:locationid", (req, res) => {
           }
         });
     });
+  }
+
+  function dataPrep(dataset) {
+    const genreList = {};
+    const filterItems = ["seen live", "All", "under 2000 listeners"];
+
+    dataset.forEach(event => {
+      event.artists.forEach(artist => {
+        if (artist.topGenres) {
+          artist.topGenres.forEach(genre => {
+            if (!genreList[genre.name]) {
+              genreList[genre.name] = genre.count;
+            } else {
+              genreList[genre.name] += genre.count;
+            }
+          });
+        }
+      });
+    });
+
+    const toptags = Object.keys(genreList)
+      .sort((a, b) => {
+        return genreList[b] - genreList[a];
+      })
+      .slice(0, 30)
+      .filter(genre => {
+        let present = true;
+        filterItems.forEach(fakeGenre => {
+          if (genre === fakeGenre) present = false;
+        });
+        return present;
+      })
+      .slice(0, 20);
+
+    return reOrganise(dataset, toptags);
+
+    function reOrganise(data, top20) {
+      const output = [];
+      data.forEach(event => {
+        event.artists.forEach(artist => {
+          if (artist.topGenres) {
+            artist.topGenres.forEach(genre => {
+              top20.forEach(hotGenre => {
+                if (genre.name === hotGenre) {
+                  output.push({
+                    genre: genre.name,
+                    weight: genre.count,
+                    date: event.date,
+                    details: event
+                  });
+                }
+              });
+            });
+          }
+        });
+      });
+      return output;
+    }
   }
 });
 
