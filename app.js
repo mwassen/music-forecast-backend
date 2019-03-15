@@ -8,7 +8,7 @@ const keys = {
   lastfm: process.env.LF_KEY
 }
 
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 5000;
 
 /*
 /locations/
@@ -28,7 +28,7 @@ app.get("/location/:name", (req, res) => {
     fetch(URL)
       .then(response => {
         if (response.status !== 200) {
-          res.status(200)
+          res.status(200);
           // console.log(
           //   "Looks like there was a problem with the SongKick location API. Status Code: " +
           //     response.status
