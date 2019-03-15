@@ -3,6 +3,10 @@ const fetch = require('node-fetch');
 
 const app = express();
 
+app.configure(function () {
+  app.use(allowCrossDomain);
+});
+
 const keys = {
   songkick: process.env.SK_KEY,
   lastfm: process.env.LF_KEY
@@ -41,6 +45,8 @@ app.get("/location/:name", (req, res) => {
       })
   }
 });
+
+
 
 app.listen(port, () => {
   console.log("listening on port " + port);
