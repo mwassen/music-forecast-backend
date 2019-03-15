@@ -34,7 +34,10 @@ app.get("/location/:name", (req, res) => {
           //     response.status
           // );
           return;
-        } else res.send(response);
+        } else return response.json();
+      })
+      .then(data => {
+        res.send(data);
       })
   }
 });
