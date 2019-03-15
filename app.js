@@ -79,7 +79,7 @@ app.get("/events/:locationid", (req, res) => {
     return Promise.all(fetches);
   })
   .then(() => {
-    res.send(dataForViz.json())
+    res.send(dataForViz);
   });
 
 
