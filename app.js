@@ -26,7 +26,7 @@ const port = process.env.PORT || 5000;
 
 // Simple status request to confirm dyno is running
 app.get("/status/", (req, res) => {
-  res.status(200);
+  res.status(200).send(true);
 });
 
 // API call for location search bar
@@ -41,7 +41,7 @@ app.get("/locations/:name", (req, res) => {
   fetch(URL)
     .then(response => {
       if (response.status !== 200) {
-        res.status(200);
+        res.status(response.status).send("Something broke!");
         return;
       } else return response.json();
     })
@@ -110,7 +110,7 @@ app.get("/events/:locationid", (req, res) => {
       const pageParam = "&page=" + page;
       return fetch(songkickURL + pageParam).then(response => {
         if (response.status !== 200) {
-          res.status(200);
+          res.status(response.status).send("Something broke!");
           return;
         } else return response.json();
       });
@@ -127,7 +127,7 @@ app.get("/events/:locationid", (req, res) => {
 
     return fetch(lastfmURL).then(response => {
       if (response.status !== 200) {
-        res.status(200);
+        res.status(response.status).send("Something broke!");
         return;
       } else
         return response.json().then(data => {
