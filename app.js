@@ -2,8 +2,8 @@ const express = require("express");
 const fetch = require("node-fetch");
 const querystring = require("querystring");
 
+// Initialise express app and setup
 const app = express();
-
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", true);
@@ -15,45 +15,44 @@ app.use(function(req, res, next) {
   next();
 });
 
+// API ekys for SongKick & Last.fm
 const keys = {
   songkick: process.env.SK_KEY,
   lastfm: process.env.LF_KEY
 };
 
+// Run on port designated by Heroku
 const port = process.env.PORT || 5000;
+
+// Simple status request to confirm dyno is running
+app.get("/status", (req, res) => {
+  res.status(200);
+});
 
 // API call for location search bar
 app.get("/locations/:name", (req, res) => {
   const query = querystring.escape(req.params.name);
+  const URL =
+    "https://api.songkick.com/api/3.0/search/locations.json?query=" +
+    query +
+    "&apikey=" +
+    keys.songkick;
 
-  if (query !== "") {
-    const URL =
-      "https://api.songkick.com/api/3.0/search/locations.json?query=" +
-      query +
-      "&apikey=" +
-      keys.songkick;
-
-    fetch(URL)
-      .then(response => {
-        if (response.status !== 200) {
-          res.status(200);
-          // console.log(
-          //   "Looks like there was a problem with the SongKick location API. Status Code: " +
-          //     response.status
-          // );
-          return;
-        } else return response.json();
-      })
-      .then(data => {
-        res.send(data);
-      });
-  }
+  fetch(URL)
+    .then(response => {
+      if (response.status !== 200) {
+        res.status(200);
+        return;
+      } else return response.json();
+    })
+    .then(data => {
+      res.send(data);
+    });
 });
 
 // API call for data retrieval
 app.get("/events/:locationid", (req, res) => {
   const query = req.params.locationid;
-
   const dataForViz = [];
   const maxPages = 10;
 
@@ -93,6 +92,7 @@ app.get("/events/:locationid", (req, res) => {
       "/calendar.json?apikey=" +
       keys.songkick;
 
+    // Makes first call to determine amount of entries and subsequent page calls
     return baseFetch(1).then(data => {
       const songkickReqs = [];
       const totalEntries = data.resultsPage.totalEntries;
