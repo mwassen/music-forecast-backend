@@ -25,7 +25,7 @@ const keys = {
 const port = process.env.PORT || 5000;
 
 // Simple status request to confirm dyno is running
-app.get("/status", (req, res) => {
+app.get("/status/", (req, res) => {
   res.status(200);
 });
 
